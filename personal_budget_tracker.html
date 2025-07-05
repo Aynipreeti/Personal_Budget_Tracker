@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .card .amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .income { color: #27ae60; }
+        .expenses { color: #e74c3c; }
+        .balance { color: #3498db; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .transactions-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .transaction-info h4 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .transaction-info p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .transaction-amount.income {
+            color: #27ae60;
+        }
+
+        .transaction-amount.expense {
+            color: #e74c3c;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+        }
+
+        .budget-progress {
+            margin-top: 20px;
+        }
+
+        .progress-item {
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.safe { background: #27ae60; }
+        .progress-fill.warning { background: #f39c12; }
+        .progress-fill.danger { background: #e74c3c; }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .no-transactions {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Personal Budget Tracker</h1>
+            <p>Take control of your finances</p>
+        </div>
+
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Total Income</h3>
+                <div class="amount income" id="totalIncome">₹0.00</div>
+            </div>
+            <div class="card">
+                <h3>Total Expenses</h3>
+                <div class="amount expenses" id="totalExpenses">₹0.00</div>
+            </div>
+            <div class="card">
+                <h3>Balance</h3>
+                <div class="amount balance" id="balance">₹0.00</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>Add Transaction</h2>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" placeholder="e.g., Salary, Groceries, Coffee" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amount">Amount (₹)</label>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" required>
+                            <option value="">Select Type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select Category</option>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="btn" onclick="budgetTracker.addTransaction()">Add Transaction</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>Recent Transactions</h2>
+                <div class="transactions-list" id="transactionsList">
+                    <div class="no-transactions">
+                        No transactions yet. Add your first transaction to get started!
+                    </div>
+                </div>
+                <button class="btn btn-danger" id="clearAll" style="margin-top: 20px;">Clear All Transactions</button>
+            </div>
+
+            <div class="section chart-container">
+                <h2>Category Spending Overview</h2>
+                <div class="budget-progress" id="categoryProgress">
+                    <p style="text-align: center; color: #666; font-style: italic;">Add some expenses to see category breakdown</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BudgetTracker {
+            constructor() {
+                this.transactions = this.loadTransactions();
+                this.categories = {
+                    income: ['Salary', 'Freelance', 'Investment', 'Business', 'Other Income'],
+                    expense: ['Food', 'Transportation', 'Entertainment', 'Bills', 'Shopping', 'Healthcare', 'Education', 'Other']
+                };
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.populateCategories();
+                this.updateDisplay();
+            }
+
+            setupEventListeners() {
+                // Remove the form submit listener since we're using onclick now
+                document.getElementById('type').addEventListener('change', () => {
+                    this.populateCategories();
+                });
+
+                document.getElementById('clearAll').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to delete all transactions?')) {
+                        this.clearAllTransactions();
+                    }
+                });
+            }
+
+            populateCategories() {
+                const typeSelect = document.getElementById('type');
+                const categorySelect = document.getElementById('category');
+                
+                categorySelect.innerHTML = '<option value="">Select Category</option>';
+                
+                if (typeSelect.value) {
+                    const categories = this.categories[typeSelect.value];
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category;
+                        categorySelect.appendChild(option);
+                    });
+                }
+            }
+
+            addTransaction() {
+                const description = document.getElementById('description').value.trim();
+                const amount = parseFloat(document.getElementById('amount').value);
+                const type = document.getElementById('type').value;
+                const category = document.getElementById('category').value;
+
+                // Validation
+                if (!description) {
+                    alert('Please enter a description');
+                    return;
+                }
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount greater than 0');
+                    return;
+                }
+                if (!type) {
+                    alert('Please select a type (Income or Expense)');
+                    return;
+                }
+                if (!category) {
+                    alert('Please select a category');
+                    return;
+                }
+
+                const transaction = {
+                    id: Date.now(),
+                    description,
+                    amount,
+                    type,
+                    category,
+                    date: new Date().toLocaleDateString()
+                };
+
+                this.transactions.unshift(transaction);
+                this.saveTransactions();
+                this.updateDisplay();
+                this.resetForm();
+                
+                // Show success message
+                alert('Transaction added successfully!');
+            }
+
+            deleteTransaction(id) {
+                this.transactions = this.transactions.filter(t => t.id !== id);
+                this.saveTransactions();
+                this.updateDisplay();
+            }
+
+            clearAllTransactions() {
+                this.transactions = [];
+                this.saveTransactions();
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                this.updateSummary();
+                this.updateTransactionsList();
+                this.updateCategoryProgress();
+            }
+
+            updateSummary() {
+                const income = this.transactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + t.amount, 0);
+
+                const expenses = this.transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+
+                const balance = income - expenses;
+
+                document.getElementById('totalIncome').textContent = `₹${income.toFixed(2)}`;
+                document.getElementById('totalExpenses').textContent = `₹${expenses.toFixed(2)}`;
+                document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
+
+                // Update balance color based on amount
+                const balanceElement = document.getElementById('balance');
+                balanceElement.className = balance >= 0 ? 'amount balance' : 'amount expenses';
+            }
+
+            updateTransactionsList() {
+                const listContainer = document.getElementById('transactionsList');
+                
+                if (this.transactions.length === 0) {
+                    listContainer.innerHTML = '<div class="no-transactions">No transactions yet. Add your first transaction to get started!</div>';
+                    return;
+                }
+
+                listContainer.innerHTML = this.transactions.map(transaction => `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>${transaction.description}</h4>
+                            <p>${transaction.category} • ${transaction.date}</p>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span class="transaction-amount ${transaction.type}">
+                                ${transaction.type === 'income' ? '+' : '-'}₹${transaction.amount.toFixed(2)}
+                            </span>
+                            <button class="delete-btn" onclick="budgetTracker.deleteTransaction(${transaction.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateCategoryProgress() {
+                const progressContainer = document.getElementById('categoryProgress');
+                const expenses = this.transactions.filter(t => t.type === 'expense');
+                
+                if (expenses.length === 0) {
+                    progressContainer.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Add some expenses to see category breakdown</p>';
+                    return;
+                }
+
+                const categoryTotals = {};
+                expenses.forEach(expense => {
+                    categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
+                });
+
+                const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+                
+                progressContainer.innerHTML = Object.entries(categoryTotals)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([category, amount]) => {
+                        const percentage = (amount / totalExpenses) * 100;
+                        const progressClass = percentage > 50 ? 'danger' : percentage > 30 ? 'warning' : 'safe';
+                        
+                        return `
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>${category}</span>
+                                    <span>₹${amount.toFixed(2)} (${percentage.toFixed(1)}%)</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${progressClass}" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+            }
+
+            resetForm() {
+                document.getElementById('transactionForm').reset();
+                this.populateCategories();
+            }
+
+            saveTransactions() {
+                // In a real app, this would save to a database
+                // For now, we'll use memory storage only
+            }
+
+            loadTransactions() {
+                // In a real app, this would load from a database
+                // For now, return empty array
+                return [];
+            }
+        }
+
+        // Initialize the budget tracker
+        const budgetTracker = new BudgetTracker();
+    </script>
+</body>
+</html>
